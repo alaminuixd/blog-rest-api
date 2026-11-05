@@ -7,19 +7,24 @@ import mongoose from 'mongoose';
  * @ Custom modules
  */
 import config from '@/config';
+import { logger } from '@/lib/winston';
 /**
  * @ Types
  */
 import type { ConnectOptions } from 'mongoose';
 /**
- * Client options
+ * Client options for connecting to MongoDB
+ * !Here the Node.JS is the client as it directly talks to MongoDB.
  */
 const clientOptions: ConnectOptions = {
   dbName: 'blog-db',
+  // A friendly name for our app so we can easily spot it in MongoDB server logs and monitoring tools
   appName: 'Blog API',
   serverApi: {
     version: '1',
+    // Turns on strict mode: throws an error if we use any commands not officially supported by this API version
     strict: true,
+    // Throws an error immediately if we use outdated or deprecated features, rather than just printing a warning
     deprecationErrors: true,
   },
 };
@@ -34,21 +39,21 @@ const clientOptions: ConnectOptions = {
  * - Errors are properly handled and rethrown for beter debugging.
  */
 
-export const connectTODatabase = async () => {
+export const connectToDatabase = async () => {
   if (!config.MONGO_URI) {
     throw new Error('No MONGO URI is found in the config');
   }
 
   try {
     await mongoose.connect(config.MONGO_URI, clientOptions);
-    console.log('MongoDB database connection success', {
+    logger.info('MongoDB database connection success', {
       uri: config.MONGO_URI,
       options: clientOptions,
     });
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : 'Error connecting database';
-    console.log(errorMessage);
+    logger.error(errorMessage);
   }
 };
 
@@ -63,7 +68,7 @@ export const connectTODatabase = async () => {
 export const disconnectFromDatabase = async () => {
   try {
     await mongoose.disconnect();
-    console.log('Disconnected from the database successfully.', {
+    logger.info('Disconnected from the database successfully.', {
       uri: config.MONGO_URI,
       options: clientOptions,
     });
@@ -72,6 +77,6 @@ export const disconnectFromDatabase = async () => {
       error instanceof Error
         ? error.message
         : 'Error while disconnecting from database';
-    console.log(errorMessage);
+    logger.warn(errorMessage);
   }
 };

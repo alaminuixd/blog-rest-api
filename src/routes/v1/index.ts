@@ -1,9 +1,23 @@
+/**
+ * @copyright 2026 alamin khan
+ * @listens Apache-2.0
+ */
+
+/**
+ * Node modules
+ */
 import { Router } from 'express';
 
 /**
  * Create instance of the Router
  */
 const router = Router();
+
+/**
+ * Routes
+ */
+import authRoute from '@/routes/v1/auth';
+
 /**
  * Root router
  */
@@ -16,5 +30,7 @@ router.get('/', (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+router.use('/auth', authRoute);
 
 export default router;

@@ -17,7 +17,8 @@ import helmet from 'helmet';
 import config from '@/config';
 import rateLimiter from '@/lib/express-rate-limit';
 import v1Routes from '@/routes/v1';
-import { connectTODatabase, disconnectFromDatabase } from '@/lib/mongosh';
+import { connectToDatabase, disconnectFromDatabase } from '@/lib/mongosh';
+import { logger } from '@/lib/winston';
 
 /**
  * Import TS types
@@ -29,7 +30,7 @@ const app = express();
 
 // Config cors options
 const corsOptions: CorsOptions = {
-  origin(origin, callback) {
+  origin: function (origin, callback) {
     // origin: Requesting frontend URL supplied by the browser
     // callback: Function used to return the result (takes: error, allow Boolean)
     console.log(`The request origin is: ${origin}`);
@@ -41,7 +42,7 @@ const corsOptions: CorsOptions = {
       callback(null, true);
     } else {
       callback(new Error(`CORS Error: ${origin} is not allowed.`), false);
-      console.log(`CORS Error: ${origin} is not allowed.`);
+      logger.warn(`CORS Error: ${origin} is not allowed.`);
     }
   },
 };
@@ -73,13 +74,13 @@ app.use(rateLimiter);
 (async () => {
   try {
     // DB connection
-    await connectTODatabase();
+    await connectToDatabase();
     // 1. Mount API v1 routers
     app.use('/api/v1', v1Routes);
 
     // 2. Start HTTP server listener
     const server = app.listen(config.PORT, () => {
-      console.log(`Listening to the PORT: http://localhost:${config.PORT}`);
+      logger.info(`Listening to the PORT: http://localhost:${config.PORT}`);
     });
 
     // 3. Catch startup errors (like port already in use)
@@ -88,7 +89,7 @@ app.use(rateLimiter);
       process.exit(1);
     });
   } catch (err) {
-    console.error('failed to start the server', err);
+    logger.error('failed to start the server', err);
     if (process.env.NODE_ENV === 'production') {
       process.exit(1);
     }
@@ -107,10 +108,10 @@ app.use(rateLimiter);
 const handleServerShutdown = async () => {
   try {
     await disconnectFromDatabase();
-    console.log('The server is shutted down.');
+    logger.warn('The server is shutted down.');
     process.exit(0);
   } catch (err) {
-    console.log('Error during server shutdown.', err);
+    logger.error('Error during server shutdown.', err);
   }
 };
 
