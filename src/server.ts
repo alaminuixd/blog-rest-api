@@ -2,31 +2,33 @@
  * @copyright 2026 Al Amin Khan
  * @license Apache-2.0
  */
-
-/**
- * Import node modules
- */
+// -----------------------------------------------------------------------------
+// Node Modules
+// -----------------------------------------------------------------------------
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import helmet from 'helmet';
-/**
- * custom modules
- */
+
+// -----------------------------------------------------------------------------
+// Custom modules
+// -----------------------------------------------------------------------------
 import config from '@/config';
 import rateLimiter from '@/lib/express-rate-limit';
 import v1Routes from '@/routes/v1';
 import { connectToDatabase, disconnectFromDatabase } from '@/lib/mongosh';
 import { logger } from '@/lib/winston';
 
-/**
- * Import TS types
- */
+// -----------------------------------------------------------------------------
+// Types
+// -----------------------------------------------------------------------------
 import type { CorsOptions } from 'cors';
 
 // initialize app from express factory function
 const app = express();
+
+// console.log(require('crypto').randomBytes(16).toString('hex'));
 
 // Config cors options
 const corsOptions: CorsOptions = {
@@ -47,9 +49,9 @@ const corsOptions: CorsOptions = {
   },
 };
 
-/**
- * @ middlewares
- */
+// -----------------------------------------------------------------------------
+// Middlewares
+// -----------------------------------------------------------------------------
 app.use(cors(corsOptions));
 // Enable JSON request parsing
 app.use(express.json());
@@ -68,9 +70,9 @@ app.use(helmet());
 // Prevents excessive/ suspicious API requests.
 app.use(rateLimiter);
 
-/**
- * @ routes & server startup
- */
+// -----------------------------------------------------------------------------
+// routes & server startup
+// -----------------------------------------------------------------------------
 (async () => {
   try {
     // DB connection

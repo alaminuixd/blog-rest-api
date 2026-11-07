@@ -3,32 +3,21 @@
  * @license Apache-2.0
  */
 
-/**
- * Node modules
- */
+// -----------------------------------------------------------------------------
+// Node Modules
+// -----------------------------------------------------------------------------
 import winston from 'winston';
 
-/**
- * Custom modules
- */
+// -----------------------------------------------------------------------------
+// Custom modules
+// -----------------------------------------------------------------------------
 import config from '@/config';
 
 const { combine, timestamp, json, errors, align, printf, colorize } =
   winston.format;
 
 const transports: winston.transport[] = [];
-/* const testTransport = new winston.transports.Console({
-  format: combine(colorize({ all: true })),
-});
-const transportkeys = Object.keys(testTransport);
-// console.log('Transport keys:', transportkeys);
 
-const transportEntries = Object.entries(testTransport);
-// console.log('Transport entries:', transportEntries);
-console.log('class check starts');
-console.dir(testTransport, { depth: null, colors: true });
-console.log('class check ends');
- */
 // Development: Pretty-printed, colorized console logs
 if (config.NODE_ENV === 'development') {
   transports.push(
