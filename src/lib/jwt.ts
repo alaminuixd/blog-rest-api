@@ -47,3 +47,16 @@ export const generateRefreshToken = (userId: Types.ObjectId): string => {
     },
   );
 };
+
+/**
+ * Verify access token
+ */
+export const verifyAccessToken = (token: string) => {
+  return jwt.verify(token, config.JWT_ACCESS_SECRET);
+};
+/**
+ * Verify refresh token
+ */
+export const verifyRefreshToken = (token: string) => {
+  return jwt.verify(token, config.JWT_REFRESH_SECRET);
+};

@@ -3,20 +3,20 @@
  * @listens Apache-2.0
  */
 
-/**
- * Node modules
- */
+// -----------------------------------------------------------------------------
+// Node Modules
+// -----------------------------------------------------------------------------
 import { Router } from 'express';
+
+// -----------------------------------------------------------------------------
+// Custom Modules
+// -----------------------------------------------------------------------------
+import authRoute from '@/routes/v1/auth';
 
 /**
  * Create instance of the Router
  */
 const router = Router();
-
-/**
- * Routes
- */
-import authRoute from '@/routes/v1/auth';
 
 /**
  * Root router
@@ -34,3 +34,8 @@ router.get('/', (req, res) => {
 router.use('/auth', authRoute);
 
 export default router;
+/**
+ * Route Chain:
+ * /api/v1/auth
+ * app.use('/api/v1', v1Routes); > router.use('/auth', authRoute);
+ */

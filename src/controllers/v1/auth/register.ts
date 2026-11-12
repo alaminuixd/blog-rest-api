@@ -1,6 +1,6 @@
 /**
  * @copyright 2026 alamin khan
- * @listens Apache-2.0
+ * @license Apache-2.0
  */
 
 // -----------------------------------------------------------------------------
@@ -19,19 +19,35 @@ import { generateAccessToken, generateRefreshToken } from '@/lib/jwt';
 // Models
 // -----------------------------------------------------------------------------
 import User from '@/models/user';
+import Token from '@/models/token';
 
 // -----------------------------------------------------------------------------
 // Types
 // -----------------------------------------------------------------------------
+import type { Request, Response } from 'express';
+import type { RegisterInput } from '@/validators/auth.validator';
 
-import { Request, Response } from 'express';
-import type { IUser } from '@/models/user';
-
-type UserData = Pick<IUser, 'email' | 'password' | 'role'>;
-
+/**
+ * Register User
+ * @route POST /api/v1/auth/register
+ * @access Public
+ */
 const register = async (req: Request, res: Response): Promise<void> => {
-  // Extract and type-cast the payload for user registration
-  const { email, password, role } = req.body as UserData;
+  // Extract and type-cast the payload using the Zod inferred type
+  const { email, password, role, firstName, lastName, socialLinks } =
+    req.body as RegisterInput;
+
+  if (role === 'admin' && !config.WHITELIST_ADMIN_MAILS.includes(email)) {
+    res.status(403).json({
+      code: 'AuthorizationError',
+      message: 'You are not allowed to register as an admin',
+    });
+
+    logger.warn(
+      `Unauthorized admin registration attempt: email ${email} is not whitelisted.`,
+    );
+    return;
+  }
 
   try {
     const username = genUsername();
@@ -40,11 +56,25 @@ const register = async (req: Request, res: Response): Promise<void> => {
       username,
       email,
       password,
+      role,
+      firstName,
+      lastName,
+      socialLinks,
     });
 
     // Generate access token and refresh token for new user.
     const accessToken = generateAccessToken(newUser._id);
-    const refreshToken = generateAccessToken(newUser._id);
+    const refreshToken = generateRefreshToken(newUser._id); // Fixed: using refresh token generator
+
+    // Store refresh token in db
+    await Token.create({
+      token: refreshToken,
+      userId: newUser._id,
+    });
+    logger.info('Refresh token created for user', {
+      userId: newUser._id,
+      token: refreshToken,
+    });
 
     // Set res.cookie and pass tokens
     res.cookie('refreshToken', refreshToken, {
@@ -59,6 +89,8 @@ const register = async (req: Request, res: Response): Promise<void> => {
         username: newUser.username,
         email: newUser.email,
         role: newUser.role,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
       },
       accessToken,
     });
