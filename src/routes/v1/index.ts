@@ -31,6 +31,10 @@ router.get('/', (req, res) => {
   });
 });
 
+/**
+ * Public auth endpoints
+ * @routes api/v1/auth
+ */
 router.use('/auth', authRoute);
 
 export default router;

@@ -19,8 +19,8 @@ import refreshTokenController from '@/controllers/v1/auth/refresh-token';
 // Middleware validator
 // -----------------------------------------------------------------------------
 import { validate } from '@/middlewares/validate.middleware';
-import { registerSchema } from '@/validators/auth.validator';
-import { loginSchema } from '@/validators/auth.validator';
+import { registerSchema } from '@/validators/z-register.schema';
+import { loginSchema } from '@/validators/z-login.schema';
 
 // -----------------------------------------------------------------------------
 // Router

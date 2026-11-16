@@ -21,7 +21,7 @@ import Token from '@/models/token';
 // TYpes
 // -----------------------------------------------------------------------------
 import type { Request, Response } from 'express';
-import type { LoginInput } from '@/validators/auth.validator';
+import type { LoginInput } from '@/validators/z-login.schema';
 
 /**
  * Login User

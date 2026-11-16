@@ -1,10 +1,9 @@
 /**
- * @copyright 2026 alamin khan
+ * @copyright 2026 Alamin Khan
  * @license Apache-2.0
  */
-
 // -----------------------------------------------------------------------------
-// Node modules
+// Node Modules
 // -----------------------------------------------------------------------------
 import { Schema, model } from 'mongoose';
 import bcrypt from 'bcrypt';
@@ -14,6 +13,9 @@ import bcrypt from 'bcrypt';
 // -----------------------------------------------------------------------------
 import type { Document } from 'mongoose';
 
+/**
+ * Create interface for the user extended from mongoose Document type
+ */
 export interface IUser extends Document {
   username: string;
   email: string;
@@ -21,6 +23,11 @@ export interface IUser extends Document {
   role: 'admin' | 'user';
   firstName?: string;
   lastName?: string;
+  emailVerified: boolean;
+  emailVerificationToken?: string;
+  emailVerificationExpires?: Date;
+  forgotPasswordToken?: string;
+  forgotPasswordExpires?: Date;
   socialLinks?: {
     website?: string;
     facebook?: string;
@@ -29,31 +36,30 @@ export interface IUser extends Document {
     x?: string;
     youtube?: string;
   };
+  createdAt: Date; // <--- Add this
+  updatedAt: Date; // <--- Add this (optional, but good practice)
 }
 
-/**
- * User schema
- */
 const userSchema = new Schema<IUser>(
   {
     username: {
       type: String,
-      required: [true, 'User name is required'],
-      maxLength: [20, 'User must be less than 20 characters'],
-      minLength: [3, "User name can't be less than 3 characters"],
-      unique: true, // Note: unique takes a boolean, error messages for unique are handled by mongoose duplicate key error codes (11000)
+      required: [true, 'Username is required'],
       trim: true,
+      unique: true,
+      minLength: [3, 'Username must be at least 3 characters'],
+      maxLength: [20, 'Username must be less than 20 characters'],
     },
     email: {
       type: String,
       required: [true, 'Email is required'],
-      maxLength: [50, 'Email must be less than 50 characters'],
+      maxLength: [254, 'Email must be less than 254 characters'],
       unique: true,
       lowercase: true,
       trim: true,
       match: [
         /^[a-zA-Z0-9.]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-        'Please fill a valid email address',
+        'Please add a valid email address',
       ],
     },
     password: {
@@ -78,6 +84,26 @@ const userSchema = new Schema<IUser>(
       type: String,
       trim: true,
       maxLength: [20, 'Last name must be less than 20 characters'],
+    },
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    emailVerificationToken: {
+      type: String,
+      select: false,
+    },
+    emailVerificationExpires: {
+      type: Date,
+      select: false,
+    },
+    forgotPasswordToken: {
+      type: String,
+      select: false,
+    },
+    forgotPasswordExpires: {
+      type: Date,
+      select: false,
     },
     socialLinks: {
       website: {
@@ -117,14 +143,10 @@ const userSchema = new Schema<IUser>(
   },
 );
 
-/**
- * Pre-save middleware to hash password securely
- */
 userSchema.pre('save', async function () {
   if (!this.isModified('password')) {
     return;
   }
-
   this.password = await bcrypt.hash(this.password, 10);
 });
 

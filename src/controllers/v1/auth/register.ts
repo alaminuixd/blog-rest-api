@@ -25,7 +25,7 @@ import Token from '@/models/token';
 // Types
 // -----------------------------------------------------------------------------
 import type { Request, Response } from 'express';
-import type { RegisterInput } from '@/validators/auth.validator';
+import type { RegisterInput } from '@/validators/z-register.schema';
 
 /**
  * Register User
@@ -76,10 +76,10 @@ const register = async (req: Request, res: Response): Promise<void> => {
       token: refreshToken,
     });
 
-    // Set res.cookie and pass tokens
+    // Set res.cookie and pass refreshToken
     res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: config.NODE_ENV === 'production',
+      httpOnly: true, // the cookie cannot be accessed by client-side JavaScript (such as via document.cookie).
+      secure: config.NODE_ENV === 'production', // the browser will only send the cookie over encrypted HTTPS connections
       sameSite: 'strict',
     });
 
