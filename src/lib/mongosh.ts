@@ -60,6 +60,7 @@ export const connectToDatabase = async () => {
     const errorMessage =
       error instanceof Error ? error.message : 'Error connecting database';
     logger.error(errorMessage);
+    throw error; // Crucial: rethrow so server.ts catches it and exits
   }
 };
 

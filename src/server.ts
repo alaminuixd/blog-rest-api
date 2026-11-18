@@ -1,5 +1,5 @@
 /**
- * @copyright 2026 Al Amin Khan
+ * @copyright 2026 Alamin Khan
  * @license Apache-2.0
  */
 
@@ -11,14 +11,14 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import helmet from 'helmet';
-import type { Server } from 'http';
+import { rateLimit } from 'express-rate-limit';
 
 // -----------------------------------------------------------------------------
-// Custom modules
+// Custom Modules
 // -----------------------------------------------------------------------------
 import config from '@/config';
 import { corsOptions } from '@/config/cors.config';
-import rateLimiter from '@/lib/express-rate-limit';
+import { rateLimitOptions } from '@/config/rate-limit.config'; // Matched configuration name
 import v1Routes from '@/routes/v1';
 import { connectToDatabase, disconnectFromDatabase } from '@/lib/mongosh';
 import { logger } from '@/lib/winston';
@@ -26,27 +26,30 @@ import { logger } from '@/lib/winston';
 // -----------------------------------------------------------------------------
 // Types
 // -----------------------------------------------------------------------------
-import type { CorsOptions } from 'cors';
+import type { Server } from 'http';
 
-// Initialize app from express factory function
+/**
+ * Initialize app from express factory function
+ */
 const app = express();
 
 // -----------------------------------------------------------------------------
 // Middlewares
 // -----------------------------------------------------------------------------
+// Security headers first so they apply to all responses (errors, rate limits, etc.)
+app.use(helmet());
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(compression({ threshold: 1024 }));
-app.use(helmet());
-app.use(rateLimiter);
+app.use(rateLimit(rateLimitOptions));
 
 // Keep a reference to the HTTP server instance for graceful shutdown
 let server: Server;
 
 // -----------------------------------------------------------------------------
-// Graceful Shutdown Handler
+// Graceful shutdown callback handler
 // -----------------------------------------------------------------------------
 const handleServerShutdown = async (signal: string) => {
   logger.info(`Received ${signal}. Starting graceful shutdown...`);

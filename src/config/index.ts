@@ -2,12 +2,11 @@
  * @copyright 2026 Alamin Khan
  * @license Apache-2.0
  */
-
 // -----------------------------------------------------------------------------
 // Node Modules
 // -----------------------------------------------------------------------------
 import dotenv from 'dotenv';
-
+import { z } from 'zod';
 // -----------------------------------------------------------------------------
 // Custom Modules
 // -----------------------------------------------------------------------------
@@ -17,6 +16,7 @@ import { zConfigSchema } from '@/validators/z-config.schema';
 // Types
 // -----------------------------------------------------------------------------
 import type ms from 'ms';
+import type { ConfigSchemaType } from '@/validators/z-config.schema';
 
 /**
  * Load environment variables from .env file into process.env
@@ -31,11 +31,11 @@ const parseResult = zConfigSchema.safeParse(process.env);
 
 if (!parseResult.success) {
   console.error('❌ Invalid environment variables configuration:');
-  console.error(JSON.stringify(parseResult.error.format(), null, 2));
+  console.error(JSON.stringify(z.treeifyError(parseResult.error), null, 2));
   process.exit(1);
 }
 
-const env = parseResult.data;
+const env: ConfigSchemaType = parseResult.data;
 
 /**
  * Application-wide immutable configuration object.
